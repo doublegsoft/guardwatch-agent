@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.6)
 project(guardwatch-agent)
 
 set(LIBUV       "3rd/libuv-1.44.1")
-set(SQLITE      "3rd/sqlite-3.34.2")
+set(SQLITE      "3rd/sqlite-3.43.2")
 set(NETSNMP     "3rd/net-snmp-5.9.4")
 set(JSON_C      "3rd/json-c-0.17")
 set(GFC         "3rd/gfc-0.1.0")

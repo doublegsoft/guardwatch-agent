@@ -1,3 +1,33 @@
+## Build third-party libraries
+
+darwin means my build platform name on macosx.
+
+### NET SNMP
+
+```bash
+
+cd build/darwin
+
+mkdir -p 3rd/net-snmp-5.9.4 && cd 3rd/net-snmp-5.9.4
+
+../../../../3rd/net-snmp-5.9.4/configure
+
+make
+```
+
+### SQLite
+
+```bash
+
+cd build/darwin
+
+mkdir -p 3rd/sqlite-3.43.2 && cd 3rdsqlite-3.43.2
+
+../../../../3rd/sqlite-3.43.2/configure
+
+make
+```
+
 ### SNMP TRAP EXAMPLE
 
 ```bash

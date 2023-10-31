@@ -83,6 +83,7 @@ int main(int argc, const char* argv[]) {
 
     strcpy(workdir, home);
     strcat(workdir, "/.guardwatch-agent");
+    gfc_fs_mkdirs(workdir);
 
     strcpy(logdir, workdir);
     strcat(logdir, "/log");

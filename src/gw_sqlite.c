@@ -103,7 +103,7 @@ const char* GW_SQL_SETTING_INSERT_AGENT_SNMP_PORT =
 
 const char* GW_SQL_SETTING_INSERT_AGENT_WEB_PORT =
     "insert into tn_gw_stg (stgcd, stgnm, stgtyp, sta, lmt, val)\n"
-    "values ('" KEY_AGENT_WEB_PORT "', '本地应用端口', 'AGENT', 'E', CURRENT_TIMESTAMP, '9876')";
+    "values ('" KEY_AGENT_WEB_PORT "', '本地应用端口', 'AGENT', 'E', CURRENT_TIMESTAMP, '10086')";
 
 const char* GW_SQL_SETTING_INSERT_AGENT_NAME =
     "insert into tn_gw_stg (stgcd, stgnm, stgtyp, sta, lmt, val)\n"
@@ -201,7 +201,6 @@ gw_sqlite_callback(void* data, int column_count, char **column_values, char **co
   gfc_map_p row = gfc_map_new();
   for(i = 0; i < column_count; i++)
   {
-    printf("%s = %s\n", column_names[i], column_values[i]);
     if (column_values[i] != NULL)
       gfc_map_put(row, column_names[i], strdup(column_values[i]));
   }

@@ -48,6 +48,7 @@ function(copy_directory SOURCE_PATH)
 endfunction()
 
 include_directories(
+  /opt/local/include
   "${GFC}/include"
   "${SQLITE}"
   "${NETSNMP}/include"
@@ -58,6 +59,7 @@ include_directories(
 )
 
 link_directories(
+  /opt/local/lib
   "${CMAKE_BINARY_DIR}/${SQLITE}/.libs"
   "${CMAKE_BINARY_DIR}/${NETSNMP}/agent/.libs"
   "${CMAKE_BINARY_DIR}/${NETSNMP}/snmplib/.libs"

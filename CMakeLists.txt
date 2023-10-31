@@ -6,7 +6,7 @@ set(LIBUV       "3rd/libuv-1.44.1")
 set(SQLITE      "3rd/sqlite-3.43.2")
 set(NETSNMP     "3rd/net-snmp-5.9.4")
 set(JSON_C      "3rd/json-c-0.17")
-set(GFC         "3rd/gfc-0.1.0")
+set(GFC         "3rd/gfc-0.1.1")
 
 set(GW_SOURCES
   src/mustach.c
@@ -64,6 +64,7 @@ link_directories(
 )
 
 add_subdirectory("${JSON_C}")
+set(WITH_GFC_CRYPTO OFF CACHE BOOL "gfc_crypto.c" FORCE)
 set(WITH_GFC_JVM OFF CACHE BOOL "gfc_jvm.c" FORCE)
 add_subdirectory("${GFC}")
 

@@ -1,0 +1,8 @@
+.project
+.DS_Store
+.cproject
+.settings
+.svn
+bin
+Debug
+/build/

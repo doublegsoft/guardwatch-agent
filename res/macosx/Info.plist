@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+  <dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>English</string>
+    <key>CFBundleExecutable</key>
+    <string>Guardwatch Agent</string>
+    <key>CFBundleGetInfoString</key>
+    <string>Copyright 2023 doublegsoft.net</string>
+    <key>CFBundleIconFile</key>
+    <string>guardwatch</string>
+    <key>CFBundleIdentifier</key>
+    <string>net.doublegsoft.guardwatch.agent</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>Guardwatch Agent</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+    <key>CFBundleSignature</key>
+    <string>GUARDWATCHAGENT</string>
+    <key>CFBundleVersion</key>
+    <string>Version 1.0</string>
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.utilities</string>
+    <!--key>LSUIElement</key>
+    <string>1</string-->
+  </dict>
+</plist>

@@ -1,0 +1,110 @@
+GUARDWATCH-AGENT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+  DisplayString FROM RFC1213-MIB
+  OBJECT-TYPE FROM RFC-1212
+  enterprises FROM RFC1155-SMI;
+
+doublegsoft MODULE-IDENTITY
+  LAST-UPDATED    "202009150000Z"
+  ORGANIZATION    "www.doublegsoft.net"
+  CONTACT-INFO    "email: guo.guo.gan@gmail.com"
+  DESCRIPTION     "GUARDWATCH AGENT"
+  REVISION        "202009150000Z"
+  DESCRIPTION     "first draft"
+  ::= { enterprises 80717 }
+
+guardwatch OBJECT IDENTIFIER
+  ::= { doublegsoft 1 }
+
+gwConfigs OBJECT IDENTIFIER
+  ::= { guardwatch 1 }
+
+gwAlerts OBJECT IDENTIFIER
+  ::= { guardwatch 2 }
+
+gwNotifications OBJECT IDENTIFIER
+  ::= { guardwatch 3 }
+
+gwCpuThresholdConfig OBJECT-TYPE
+  SYNTAX INTEGER (0..255)
+  MAX-ACCESS read-write
+  STATUS current
+  DESCRIPTION "
+    CPU报警阈值，百分数
+  "
+  ::= { gwConfigs 1 }
+
+gwMemoryThresholdConfig OBJECT-TYPE
+  SYNTAX INTEGER (0..255)
+  MAX-ACCESS read-write
+  STATUS current
+  DESCRIPTION "
+    内存报警阈值，百分数
+  "
+  ::= { gwConfigs 2 }
+
+gwCpuAlert OBJECT-TYPE
+  SYNTAX INTEGER (0..255)
+  MAX-ACCESS read-only
+  STATUS current
+  DESCRIPTION "
+    Number of active major alarms on the system
+  "
+  ::= { gwAlerts 1 }
+
+gwMemoryAlert OBJECT-TYPE
+  SYNTAX INTEGER (0..255)
+  MAX-ACCESS read-only
+  STATUS current
+  DESCRIPTION "
+    Number of active major alarms on the system
+  "
+  ::= { gwAlerts 2 }
+
+--------------------------------------------------------------------------------
+--                            Notification Types                              --
+--------------------------------------------------------------------------------
+
+gwHeartbeat NOTIFICATION-TYPE
+  OBJECTS {
+    gwAgentName,
+    gwAgentLocation
+  }
+  STATUS       current
+  DESCRIPTION "
+    代理程序的心跳提醒。
+  "
+  ::= { gwNotifications 1 }
+
+--------------------------------------------------------------------------------
+--                            Custom Object Types                             --
+--------------------------------------------------------------------------------
+gwTrapAddress OBJECT-TYPE
+  SYNTAX          DisplayString
+  MAX-ACCESS      read-write
+  STATUS          current
+  DESCRIPTION "
+    设置接收TRAP的目标机器地址和端口
+  "
+  ::= { gwConfigs 1 }
+
+gwAgentName OBJECT-TYPE
+  SYNTAX          DisplayString
+  MAX-ACCESS      read-write
+  STATUS          current
+  DESCRIPTION "
+    运行代理程序的机器的自定义名称
+  "
+  ::= { gwConfigs 2 }
+
+gwAgentLocation OBJECT-TYPE
+  SYNTAX          DisplayString
+  MAX-ACCESS      read-write
+  STATUS          current
+  DESCRIPTION "
+    运行代理程序的机器的物理位置
+  "
+  ::= { gwConfigs 3 }
+
+END

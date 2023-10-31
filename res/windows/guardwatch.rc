@@ -1,0 +1,100 @@
+/*
+**                                  _________                   _____        ______
+** _______ _____  ________ _______________  /___      ________ ___  /___________  /_
+** __  __ `/_  / / /_  __ `/__  ___/_  __  / __ | /| / /_  __ `/_  __/_  ___/__  __ \
+** _  /_/ / / /_/ / / /_/ / _  /    / /_/ /  __ |/ |/ / / /_/ / / /_  / /__  _  / / /
+** _\__, /  \__,_/  \__,_/  /_/     \__,_/   ____/|__/  \__,_/  \__/  \___/  /_/ /_/
+** /____/
+**
+** Copyright (C) 2020 doublegsoft.net
+**
+** This program is free software: you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation, either version 3 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#include <windows.h>
+#include "resource.h"
+
+// 936 is code page for gbk
+#pragma code_page(936)
+
+IDI_TRAY_ICON             ICON    "guardwatch.ico"
+IDI_TRAY_ICON_REVERSED    ICON    "guardwatch-reversed.ico"
+
+IDB_APP_STAT              BITMAP  "start.bmp"
+IDB_APP_STOP              BITMAP  "stop.bmp"
+IDB_APP_SETTINGS          BITMAP  "start.bmp"
+IDB_APP_ABOUT             BITMAP  "stop.bmp"
+IDB_APP_EXIT              BITMAP  "exit.bmp"
+
+
+IDD_ABOUT DIALOGEX 22, 17, 230, 56
+CAPTION "关于 GuardWatch"
+FONT 8, "黑体", 0, 0, 0x0
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | DS_CENTER
+BEGIN
+  ICON                IDI_TRAY_ICON, IDC_APP_ICON, 14, 9, 20, 20
+  LTEXT               "GuardWatch Version 0.1.0", IDC_STATIC, 49, 10, 119, 10
+  LTEXT               "Copyright (C) 2020", IDC_STATIC, 49, 22, 119, 10
+  LTEXT               "doublegsoft.net", IDC_STATIC, 49, 32, 108, 10
+  DEFPUSHBUTTON       "关  闭", IDOK, 195, 6, 30, 12
+
+END
+
+IDD_SETTINGS DIALOGEX 22, 17, 200, 106
+CAPTION "设置"
+FONT 8, "黑体", 0, 0, 0x0
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | DS_CENTER
+BEGIN
+  LTEXT               "服务器地址:", IDC_STATIC,                 14,   9, 72, 12
+  EDITTEXT            IDC_SETTINGS_SERVER_ADDRESS,              86,   7, 100, 12
+  LTEXT               "服务器网管端口:", IDC_STATIC,              14,   22, 72, 12
+  EDITTEXT            IDC_SETTINGS_SERVER_SNMP_PORT,            86,   20, 100, 12
+  LTEXT               "服务器应用端口:", IDC_STATIC,              14,   35, 72, 12
+  EDITTEXT            IDC_SETTINGS_SERVER_WEB_PORT,             86,   33, 100, 12
+  LTEXT               "本机机器名称:", IDC_STATIC,                14,   48, 72, 12
+  EDITTEXT            IDC_SETTINGS_AGENT_NAME,                  86,   46, 100, 12
+  LTEXT               "本机网管端口:", IDC_STATIC,                14,   61, 72, 12
+  EDITTEXT            IDC_SETTINGS_AGENT_SNMP_PORT,              86,  59, 100, 12
+  LTEXT               "本机应用端口:", IDC_STATIC,                14,   74, 72, 12
+  EDITTEXT            IDC_SETTINGS_AGENT_WEB_PORT,              86,   72, 100, 12
+  DEFPUSHBUTTON       "保  存", IDOK,                             120,  88, 30, 12
+  PUSHBUTTON          "关  闭", IDCANCEL,                         156,  88, 30, 12
+END
+
+
+VS_VERSION_INFO       VERSIONINFO
+FILEVERSION           0, 1, 0, 0
+PRODUCTVERSION        0, 1, 0, 0
+FILEOS                0x4
+FILETYPE              0x1
+{
+  BLOCK "StringFileInfo"
+  {
+    BLOCK "040904E4"
+    {
+      VALUE "CompanyName", "doublegsoft.net\000"
+      VALUE "FileDescription", "收集WINDOWS系统终端的监控指标数据\000"
+      VALUE "FileVersion", "0.1.0\000"
+      VALUE "ProductVersion", "0.1.0\000"
+      VALUE "InternalName", "Guardwatch Agent\000"
+      VALUE "ProductName", APPLICATION_NAME
+      VALUE "LegalCopyright", "Copyright \251 by doublegsoft.net\000"
+      VALUE "OriginalFilename", "guardwatch-agent.exe\000"
+    }
+  }
+  BLOCK "VarFileInfo"
+  {
+    VALUE "Translation", 0x0804, 1200
+  }
+}

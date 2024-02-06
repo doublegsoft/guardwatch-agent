@@ -1,3 +1,8 @@
+![GuardWatch-Agent](res/guardwatch.png)
+
+GuardWatch-Agent
+================
+
 ## Build third-party libraries
 
 darwin means my build platform name on macosx.

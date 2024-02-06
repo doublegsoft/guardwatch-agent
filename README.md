@@ -83,3 +83,11 @@ cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=~/export/bin/toolchain-mingw32-
 #   error "Unknown compiler"
 #endif
 ```
+
+### rrdtool
+
+```bash
+
+export RRDTOOL=rrdtool-1.8.0
+mkdir -p 3rd/rrdtool-1.8.0 && cd 3rd/$RRDTOOL && ../../../../3rd/$RRDTOOL/configure && make
+```

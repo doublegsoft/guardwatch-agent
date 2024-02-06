@@ -39,6 +39,9 @@
 
 #include <time.h>
 #include <unistd.h>
+#ifdef __linux__
+#include <signal.h>
+#endif
 
 #include <gfc.h>
 

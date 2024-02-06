@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.6)
 
 project(guardwatch-agent)
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
+
 set(LIBUV       "3rd/libuv-1.44.1")
 set(SQLITE      "3rd/sqlite-3.43.2")
 set(NETSNMP     "3rd/net-snmp-5.9.4")
@@ -51,6 +53,7 @@ include_directories(
   /opt/local/include
   "${GFC}/include"
   "${SQLITE}"
+  "${CMAKE_BINARY_DIR}/${NETSNMP}/include"
   "${NETSNMP}/include"
   "${NETSNMP}/snmplib"
   "${JSON_C}"
@@ -60,6 +63,7 @@ include_directories(
 
 link_directories(
   /opt/local/lib
+  "${SQLITE}/.libs"
   "${CMAKE_BINARY_DIR}/${SQLITE}/.libs"
   "${CMAKE_BINARY_DIR}/${NETSNMP}/agent/.libs"
   "${CMAKE_BINARY_DIR}/${NETSNMP}/snmplib/.libs"
@@ -134,13 +138,23 @@ if(APPLE)
     XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS       "@executable_path/../Frameworks"
     MACOSX_BUNDLE_INFO_PLIST                      ../../res/macosx/Info.plist
   )
-
 ELSEIF(WIN32)
+
   add_executable(guardwatch-agent
     ${GW_SOURCES}
     "src/gw_os.c"
     "src/windows/gw_win.c"
     "src/windows/gw_main.c"
+  )
+  target_link_libraries(guardwatch-agent PRIVATE
+    ${GW_LIBS}
+    pthread
+  )
+ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+
+  add_executable(guardwatch-agent
+    ${GW_SOURCES}
+    "src/linux/gw_main.c"
   )
   target_link_libraries(guardwatch-agent PRIVATE
     ${GW_LIBS}

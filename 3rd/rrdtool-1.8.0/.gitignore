@@ -1,0 +1,87 @@
+*~
+*.o
+*.lo
+*.a
+*.la
+*.dll
+*.exe
+*.exp
+*.lib
+*.obj
+*.pdb
+*.res
+*-*.*.*/
+/build/
+*.tar.gz
+
+# autotools stuff
+/m4/*.m4
+!/m4/acinclude.m4
+!/m4/snprintf.m4
+/aclocal.m4
+/autom4te.cache/
+
+# automake
+#Makefile.in
+#/rrd_config.h.in
+/ar-lib
+
+# autoconf generated files
+Makefile
+.deps/
+/config.log
+/config.status
+/etc/rrdcached.service
+/etc/rrdcached.socket
+/etc/rrdcached-default-lsb
+/libtool
+/src/librrd.pc
+/src/rrd_config.h
+/src/stamp-h1
+
+# Build EAR (BEAR) compilation database file
+compile_commands.json
+
+# po
+/ABOUT-NLS
+/po/*
+!/po/*.po
+!/po/ChangeLog
+!/po/LINGUAS
+!/po/Makevars
+!/po/Makefile.in.in
+!/po/POTFILES.in
+!/po/remove-potcdate.sin
+
+# cscope
+/cscope.*
+
+#vim swp file
+*.swp
+
+# generated documentation files
+/doc/*.txt
+/doc/*.html
+/doc/*.pdf
+/doc/*.1
+/doc/*.3
+/doc/pod2*.tmp
+/doc/RRD?.pod
+
+# Windows build files
+/bindings/dotnet/*.suo
+/contrib
+/contrib-x64
+/vcpkg
+/win32/*.VC.db
+/win32/*.VC.opendb
+/win32/*.opensdf
+/win32/*.sdf
+/win32/*.suo
+/win32/.dirstamp
+/win32/.vs
+/win32/Debug
+/win32/DebugDLL
+/win32/Release
+/win32/ReleaseDLL
+/win32/Static\ Debug

@@ -60,6 +60,8 @@ const struct mg_str GW_HTTP_URI_OS_VOLUME             = MG_MK_STR("/api/agent/os
 
 const struct mg_str GW_HTTP_URI_ACKNOWLEDGE           = MG_MK_STR("/api/agent/acknowledge");
 
+const struct mg_str GW_HTTP_URI_HEARTBEAT             = MG_MK_STR("/api/agent/heartbeat");
+
 /*!
 **
 ** @param param
@@ -210,6 +212,14 @@ gw_httpd_event(struct mg_connection* conn,
         gw_httpd_ok(conn, resp);
         return;
       }
+    }
+    /*!
+    ** heartbeat
+    */
+    else if (gw_httpd_prefix_check(&hm->uri, &GW_HTTP_URI_HEARTBEAT))
+    {
+      gw_httpd_ok(conn, "{\"error\":{\"code\":0,\"message\":\"success\"}}");
+      return;
     }
 #ifdef WIN32
     else if (gw_httpd_prefix_check(&hm->uri, &GW_HTTP_URI_OS_CPU))

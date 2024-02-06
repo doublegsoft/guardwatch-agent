@@ -1,0 +1,289 @@
+
+TZ=Europe/Zurich
+export TZ
+
+# Use dot as decimal separator, which is required for some tests to pass
+LC_NUMERIC=C
+export LC_NUMERIC
+
+BASEDIR="${BASEDIR:-$(dirname -- $0)}"
+BASEDIR="$(readlink -f -- $BASEDIR)"
+
+BUILDDIR="${BUILDDIR:-${BASEDIR}}"
+TOP_BUILDDIR="${TOP_BUILDDIR:-${BASEDIR}/..}"
+
+DIFF="diff -u"
+DIFF9=seddif
+
+# On Windows, names of times zones are different. Substitute 'W. Europe Standard Time' with 'CET'
+function seddif {
+   perl -p -e 's/([-+]?\d\.\d+e[-+]\d+)/sprintf("%0.7e",$1)/ge; s/W. Europe Standard Time/CET/g' | $DIFF $@
+}
+
+BLANK=blank
+
+function blank {
+   perl -p -e 'm/(left|top|right|bottom|width|height|coords)/ && s/\d+/\#/g' $@
+}
+
+#
+# because valgrind has trouble with glib memory handling
+# (see e.g. https://developer.gnome.org/glib/2.30/glib-running.html or 
+# https://stackoverflow.com/questions/4254610/valgrind-reports-memory-possibly-lost-when-using-glib-data-types)
+# we set some env. vars to work around them:
+
+VALGRIND_ERR_FILE="${BASEDIR}/$(basename $0)-valgrind-err.tmp"
+if [ -e "$VALGRIND_ERR_FILE" ]; then
+  rm "$VALGRIND_ERR_FILE"
+fi
+
+function valgrind {
+  # use a sub shell, so setting environment variables only affects the current
+  # rrdtool run and not subsequent ones
+  local CMD="$1"
+  shift
+  (
+    G_DEBUG=gc-friendly
+    G_SLICE=all
+
+    export G_DEBUG 
+    export G_SLICE
+
+    VALGRIND_OPTS=
+    if [ -n "$VALGRIND_LOGFILE" ] ; then
+        TMP_LOG="${VALGRIND_LOGFILE}.$$.tmp"
+        VALGRIND_OPTS=--log-file="${TMP_LOG}"
+    fi
+
+    libtool --mode=execute valgrind --tool=memcheck \
+			--suppressions="$BASEDIR/valgrind-supressions" \
+			--leak-check=full --show-reachable=yes \
+			--leak-resolution=high --num-callers=20 \
+			--error-exitcode=111 \
+			--track-fds=yes \
+                        --track-origins=yes \
+			--free-fill=ad \
+                        $VALGRIND_OPTS \
+			"$CMD" "$@"
+    RC=$?
+
+    if [ -n "$VALGRIND_LOGFILE" ] ; then
+        cat -- "${TMP_LOG}" >> "$VALGRIND_LOGFILE"
+        if [ $RC == 111 ] ; then
+            sed -n '/LEAK SUMMARY:/,$p' -- "${TMP_LOG}" >&2
+        fi
+        rm -f -- "${TMP_LOG}"
+    fi
+
+    # make sure to properly report the rrdtool exit code to the caller by:
+    #  - first: exiting with the original exit code from the subshell and
+    exit $RC
+  )
+  #    - second: by returning the subshell exit code to the function caller
+  #   Also create a file, in case the caller has difficulty testing the rc.
+  local RC=$?
+  if [ "$RC" == 111 ]; then
+    touch "$VALGRIND_ERR_FILE"
+  fi
+  return $RC
+}
+
+function verbose_rrdtool {
+	echo "$RRDTOOL_V" "$@" >&2
+	"$RRDTOOL_V" "$@"
+}
+
+function fail {
+	RC="$1"
+	shift
+
+	echo >&2 "FAILED: (rc=$RC)" "$@"
+	if [ -n "$CONTINUE" ] ; then
+		return
+	fi
+	if [ -n "$INTERACTIVE" ] ; then
+		read -p "Continue? (y/n)" YN
+		if [ "$YN" != 'y' ] ; then 
+			exit 1
+		fi
+	else
+		exit 1
+	fi
+}
+
+function ok {
+	echo >&2 "OK:" "$@"
+}
+
+function report {
+	RC=$?
+	if [ -e "$VALGRIND_ERR_FILE" ]; then
+		RC="valgrind error"
+		rm "$VALGRIND_ERR_FILE"
+	fi
+
+	if [ "$RC" = 0 ] ; then
+		ok "$@"
+	else
+		fail "$RC" "$@"
+	fi
+
+
+}
+
+function run_cached {
+        local D="$1"
+        local CACHED="${D:-$RRDCACHED}"
+
+        stop_cached
+
+        local ADDR
+        [ -z "$RRDCACHED_SOCK" ] && RRDCACHED_SOCK="unix"
+
+        if [ $RRDCACHED_SOCK == "unix" ]; then
+            export BASEDIR="${BUILDDIR}/cached"
+            export BUILDDIR="${BASEDIR}"
+            ADDR="unix:$BASEDIR/$(basename $0)-rrdcached.sock"
+        else
+            export BASEDIR="${BUILDDIR}/cached"
+            export RRDCACHED_STRIPPATH="${BUILDDIR}"
+
+            function RRDTOOLCOMPAT() {
+                RRDCACHED_STRIPPATH=${BUILDDIR}
+                RRDTOOL_ORIG=$TOP_BUILDDIR/src/rrdtool
+                ARGS=("$@")
+
+                # rrdcached does not support update with remote template
+                if [ $1 == "update" ] && [ $3 == '--template' ]; then
+                    RRDCACHED_STRIPPATH=${BASEDIR}
+                    ARGS=( $(sed "s#${BUILDDIR}#${BASEDIR}#" <<< "${ARGS[@]}") )
+                fi
+
+                # rrdcached does not support remote dump
+                if [ $1 == "dump" ]; then
+                    RRDCACHED_STRIPPATH=${BUILDDIR} $RRDTOOL_ORIG flushcached $2 || fail flushcached
+                    ARGS=( $(sed "s#${BUILDDIR}#${BASEDIR}#" <<< "${ARGS[@]}") )
+                    RRDCACHED_STRIPPATH=${BASEDIR}
+                fi
+
+                # rrdcached does not support remote restore
+                if [ $1 == "restore" ]; then
+                    ARGS=( "restore" "$2" $(sed "s#${BUILDDIR}#${BASEDIR}#" <<< $3) )
+                    RRDCACHED_STRIPPATH=${BASEDIR}
+                fi
+
+                # rrdcached does not support tune
+                # if [ $1 == "tune" ]; then
+                #     ARGS=( $(sed "s#${BUILDDIR}#${BASEDIR}#" <<< "${ARGS[@]}") )
+                # fi
+
+                # rrdcached does not support create with remote source or template
+                if [ $1 == "create" ]; then
+                    NEWARGS=()
+                    IS_NEXT_SOURCE_TEMPLATE=0
+                    for arg in $(echo "${ARGS[@]}"); do
+                        if [ $IS_NEXT_SOURCE_TEMPLATE == "1" ]; then
+                            arg=$(sed "s#${BUILDDIR}#${BASEDIR}#" <<< $arg)
+                            IS_NEXT_SOURCE_TEMPLATE=0
+                        fi
+                        ([ $arg == "--source" ] || [ $arg == "--template" ]) && IS_NEXT_SOURCE_TEMPLATE=1
+                        NEWARGS+="$arg "
+                    done
+                    ARGS=( ${NEWARGS[@]} )
+                fi
+
+                $RRDTOOL_ORIG "${ARGS[@]}"
+                ret=$?
+
+                if [ $1 == "update" ]; then
+                    RRDCACHED_STRIPPATH=${BUILDDIR} $RRDTOOL_ORIG flushcached $2 || fail flushcached
+                fi
+
+                return $ret
+            }
+            export RRDTOOL=RRDTOOLCOMPAT
+
+            randport=$(python -S -c "import random; random.seed('$(basename $0)'); print(random.randrange(49152,65535))")
+            port=$(python2 -S << HERE
+import SocketServer
+s = SocketServer.TCPServer(("localhost", 0), None)
+print(s.server_address[1])
+s.server_close()
+HERE
+)
+            ADDR="localhost:$port"
+        fi
+
+        CACHED_PID_FILE="$BASEDIR/$(basename $0)-rrdcached.pid"
+
+        $CACHED -p "$CACHED_PID_FILE" -l "$ADDR" -b "$(readlink -f -- $BASEDIR)" -F -B
+
+        RRDCACHED_ADDRESS=$ADDR
+        export RRDCACHED_ADDRESS
+
+        sleep 1
+        trap 'stop_cached' EXIT
+}
+
+function stop_cached {
+        if [ -n "$CACHED_PID_FILE" ] ; then
+                kill $(cat "$CACHED_PID_FILE")
+                rm -f -- "$CACHED_PID_FILE"
+                CACHED_PID_FILE=""
+                RRDCACHED_ADDRESS=""
+        fi
+}
+
+function is_cached {
+        [ -n "$RRDCACHED_ADDRESS" ]
+}
+
+function exit_if_cached_running {
+        local E="$1"
+        local MSG="$2"
+        if is_cached ; then
+                echo >&2 "$MSG"
+                exit ${E:-1}
+        fi
+}
+
+if [ -z "$RRDTOOL" ] ; then 
+        RRDTOOL=$TOP_BUILDDIR/src/rrdtool
+        RRDCACHED=$TOP_BUILDDIR/src/rrdcached
+
+        NEED_CACHED=
+        for ST in $TESTS_STYLE ; do
+                case "$ST" in
+                rrdcached-unix)
+                        NEED_CACHED=1
+                        STANDARD_RRDCACHED="$RRDCACHED"
+                        RRDCACHED_SOCK=unix
+                        ;;
+                rrdcached-tcp)
+                        NEED_CACHED=1
+                        STANDARD_RRDCACHED="$RRDCACHED"
+                        RRDCACHED_SOCK=tcp
+                        ;;
+                valgrind)
+                        RRDTOOL="valgrind $TOP_BUILDDIR/src/rrdtool"
+                        RRDCACHED="valgrind $TOP_BUILDDIR/src/rrdcached"
+                        ;;
+                valgrind-logfile)
+                        RRDTOOL="valgrind $TOP_BUILDDIR/src/rrdtool"
+                        RRDCACHED="valgrind $TOP_BUILDDIR/src/rrdcached"
+                        VALGRIND_LOGFILE="${BASEDIR}/$(basename $0)"-valgrind.log
+                        rm -f "$VALGRIND_LOGFILE"
+                        ;;
+                *)
+                        ;;
+                esac
+        done
+        if [ -n "$NEED_CACHED" ] ; then
+                run_cached "$STANDARD_RRDCACHED"
+        fi
+fi
+
+if [ -n "$VERBOSE" ] ; then
+	RRDTOOL_V="$RRDTOOL"
+	RRDTOOL=verbose_rrdtool
+fi

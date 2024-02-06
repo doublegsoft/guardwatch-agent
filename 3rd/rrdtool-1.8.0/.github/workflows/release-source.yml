@@ -1,0 +1,46 @@
+---
+name: Release Source
+
+# yamllint disable rule:line-length
+# yamllint disable-line rule:truthy
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Release Source
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Get Version
+      id: get_version
+      run: echo '::set-output name=version::'$(cat VERSION)
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install autopoint build-essential gettext libpango1.0-dev ghostscript
+    - name: Build Dist
+      run: |
+        ./bootstrap
+        ./configure
+        make dist
+        perl -077 -ne '/^(.+?\n.+?\n.+?)\nRRDtool/s && print $1' CHANGES > releasenotes
+    - name: Create Release
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "rrdtool-${{ steps.get_version.outputs.version }}.tar.gz"
+        artifactContentType: "application/tar+gzip"
+        bodyFile: releasenotes
+        discussionCategory: "Release Issues"
+        name: "RRDtool Version ${{ steps.get_version.outputs.version }}"
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+

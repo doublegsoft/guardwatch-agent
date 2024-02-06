@@ -1,4 +1,4 @@
-<div style="text-align:center"><img src="res/guardwatch.png"/></div>
+![GuardWatch-Agent](res/guardwatch.png#center)
 
 GuardWatch-Agent
 ================

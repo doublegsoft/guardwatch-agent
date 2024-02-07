@@ -52,7 +52,7 @@ endfunction()
 include_directories(
   /opt/local/include
   "${GFC}/include"
-  "${SQLITE}"
+  "${CMAKE_BINARY_DIR}/${SQLITE}"
   "${CMAKE_BINARY_DIR}/${NETSNMP}/include"
   "${NETSNMP}/include"
   "${NETSNMP}/snmplib"

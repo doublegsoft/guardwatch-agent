@@ -26,9 +26,22 @@ make
 
 cd build/darwin
 
-mkdir -p 3rd/sqlite-3.43.2 && cd 3rdsqlite-3.43.2
+mkdir -p 3rd/sqlite-3.43.2 && cd 3rd/sqlite-3.43.2
 
 ../../../../3rd/sqlite-3.43.2/configure
+
+make
+```
+
+### RRDTool
+
+```bash
+
+cd build/darwin
+
+mkdir -p 3rd/rrdtool-1.8.0 && cd 3rd/rrdtool-1.8.0
+
+../../../../3rd/rrdtool-1.8.0/configure
 
 make
 ```

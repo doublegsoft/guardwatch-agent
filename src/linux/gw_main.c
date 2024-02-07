@@ -25,6 +25,7 @@
 #include <gfc.h>
 #include <signal.h>
 #include <unistd.h>
+#include <pwd.h>
 
 #include "gw_app.h"
 
@@ -40,14 +41,18 @@ sigterm_handler(int signum)
   exit(signum);
 }
 
-int main(int argc, char* argv[])
+int 
+main(int argc, char* argv[])
 {
   char workdir[1024] = {'\0'};
   char logdir[1024] = {'\0'};
 
+  struct passwd* pw = getpwuid(getuid());
+
   signal(SIGTERM, sigterm_handler);
 
-  strcpy(workdir, "/root/.guardwatch-agent");
+  strcpy(workdir, pw->pw_dir);
+  strcat(workdir, "/.guardwatch-agent");
   gfc_fs_mkdirs(workdir);
 
   strcpy(logdir, workdir);

@@ -76,11 +76,11 @@ WinMain(HINSTANCE hInstance,
   {
     char szBuffer[2048] = {'\0'};
     DWORD dwBufferSize = sizeof(szBuffer);
-    lRes = RegQueryValueExW(hKey, "GUARDWATCH´úÀí³ÌĞò", 0, NULL, (LPBYTE)szBuffer, &dwBufferSize);
+    lRes = RegQueryValueExW(hKey, "GUARDWATCHä»£ç†ç¨‹åº", 0, NULL, (LPBYTE)szBuffer, &dwBufferSize);
     if (ERROR_SUCCESS != lRes)
     {
       lRes = RegSetValueEx(hKey,
-                           "GUARDWATCH´úÀí³ÌĞò",
+                           "GUARDWATCHä»£ç†ç¨‹åº",
                            0,
                            REG_EXPAND_SZ,
                            (LPBYTE)szValue,
@@ -94,22 +94,22 @@ WinMain(HINSTANCE hInstance,
   mutex = CreateMutex(NULL, TRUE, "guardwatch");
   if ( GetLastError() == ERROR_ALREADY_EXISTS )
   {
-    MessageBox(NULL, "³ÌĞòÒÑ¾­ÔÚÔËĞĞÖĞ...", "ÌáÊ¾", MB_OK);
+    MessageBox(NULL, "ç¨‹åºå·²ç»åœ¨è¿è¡Œä¸­...", "æç¤º", MB_OK);
     return -1;
   }
 
-  gfc_log_info("%s", "¿ªÊ¼Æô¶¯Ó¦ÓÃ³ÌĞò...");
+  gfc_log_info("%s", "å¼€å§‹å¯åŠ¨åº”ç”¨ç¨‹åº...");
 
 //  int rc = gw_mssql_connect("120.79.137.143", 1433, "THIS4", "sa", "Winning123");
 //  if (rc != 0)
-//    gfc_log_info("%s", "Êı¾İ¿âÁ¬½Ó²»³É¹¦£¡");
+//    gfc_log_info("%s", "æ•°æ®åº“è¿æ¥ä¸æˆåŠŸï¼");
 
   // gfc_log_info("select 1 = %d", gw_mssql_query("select 1"));
 
-  // Æô¶¯WIN32³ÌĞò£¬°üÀ¨ÏµÍ³ÍĞÅÌ£¬¸÷ÖÖ·şÎñÏß³Ì
+  // å¯åŠ¨WIN32ç¨‹åºï¼ŒåŒ…æ‹¬ç³»ç»Ÿæ‰˜ç›˜ï¼Œå„ç§æœåŠ¡çº¿ç¨‹
   gw_win_start(hInstance);
 
-  gfc_log_info("%s", "Ó¦ÓÃ³ÌĞò·şÎñÆô¶¯Íê³É£¡");
+  gfc_log_info("%s", "åº”ç”¨ç¨‹åºæœåŠ¡å¯åŠ¨å®Œæˆï¼");
 
   CloseHandle(mutex);
   return 0;

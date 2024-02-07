@@ -48,34 +48,34 @@ WinMain(HINSTANCE hInstance,
   {
     char szBuffer[2048] = {'\0'};
     DWORD dwBufferSize = sizeof(szBuffer);
-    lRes = RegQueryValueExA(hKey, "GUARDWATCH´úÀí³ÌÐò", 0, NULL, (LPBYTE)szBuffer, &dwBufferSize);
+    lRes = RegQueryValueExA(hKey, "GUARDWATCHä»£ç†ç¨‹åº", 0, NULL, (LPBYTE)szBuffer, &dwBufferSize);
     if (ERROR_SUCCESS != lRes)
     {
       lRes = RegSetValueEx(hKey,
-                           "GUARDWATCH´úÀí³ÌÐò",
+                           "GUARDWATCHä»£ç†ç¨‹åº",
                            0,
                            REG_EXPAND_SZ,
                            (LPBYTE)szValue,
                            (DWORD)strlen(szValue) + 1);
       if (lRes == ERROR_SUCCESS)
         MessageBox(NULL,
-                   "³É¹¦×¢²áGUARDWATCH´úÀí³ÌÐò£¡",
-                   "×¢²á³É¹¦",
+                   "æˆåŠŸæ³¨å†ŒGUARDWATCHä»£ç†ç¨‹åºï¼",
+                   "æ³¨å†ŒæˆåŠŸ",
                    MB_OK);
     }
     else
     {
       MessageBox(NULL,
-                 "GUARDWATCH×¢²áÐÅÏ¢ÒÑ¾­´æÔÚ£¡",
-                 "ÌáÊ¾",
+                 "GUARDWATCHæ³¨å†Œä¿¡æ¯å·²ç»å­˜åœ¨ï¼",
+                 "æç¤º",
                  MB_OK);
     }
   }
   else
   {
     MessageBox(NULL,
-               "ÇëÓÃ¹ÜÀíÔ±È¨ÏÞÔËÐÐ×¢²á³ÌÐò£¡",
-               "´íÎó",
+               "è¯·ç”¨ç®¡ç†å‘˜æƒé™è¿è¡Œæ³¨å†Œç¨‹åºï¼",
+               "é”™è¯¯",
                MB_OK);
   }
   RegCloseKey(hKey);

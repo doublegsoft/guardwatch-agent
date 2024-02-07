@@ -257,21 +257,21 @@ gw_win_on_context_menu(HWND hWnd)
 
   if ( _bStarting == TRUE )
   {
-    InsertMenu(hPopMenu, 0xFFFFFFFF, uFlags, IDM_APP_STOP, "Í£Ö¹");
+    InsertMenu(hPopMenu, 0xFFFFFFFF, uFlags, IDM_APP_STOP, "åœæ­¢");
   }
   else
   {
-    InsertMenu(hPopMenu, 0xFFFFFFFF, uFlags, IDM_APP_START, "Æô¶¯");
+    InsertMenu(hPopMenu, 0xFFFFFFFF, uFlags, IDM_APP_START, "å¯åŠ¨");
   }
 
   // https://docs.microsoft.com/en-us/windows/win32/menurc/using-menus#example-of-menu-item-bitmaps
-  InsertMenu(hPopMenu, 0xFFFFFFFF, uFlags, IDM_APP_SETTINGS, "ÉèÖÃ...");
+  InsertMenu(hPopMenu, 0xFFFFFFFF, uFlags, IDM_APP_SETTINGS, "è®¾ç½®...");
   InsertMenu(hPopMenu, 0xFFFFFFFF, MF_SEPARATOR, IDM_APP_SEPARATOR, "");
 
-  InsertMenu(hPopMenu, 0xFFFFFFFF, uFlags, IDM_APP_ABOUT, "¹ØÓÚ...");
+  InsertMenu(hPopMenu, 0xFFFFFFFF, uFlags, IDM_APP_ABOUT, "å…³äº...");
   InsertMenu(hPopMenu, 0xFFFFFFFF, MF_SEPARATOR, IDM_APP_SEPARATOR, "");
 
-  InsertMenu(hPopMenu, 0xFFFFFFFF, uFlags, IDM_APP_EXIT, "ÍË³ö");
+  InsertMenu(hPopMenu, 0xFFFFFFFF, uFlags, IDM_APP_EXIT, "é€€å‡º");
 
   SetMenuItemBitmaps(hPopMenu, 0, MF_BITMAP, bitmaps[0], bitmaps[0]);
   SetMenuItemBitmaps(hPopMenu, 1, MF_BITMAP, bitmaps[1], bitmaps[1]);
@@ -308,7 +308,7 @@ gw_win_trayproc(HWND hWnd,
     switch(lParam)
     {
     case WM_LBUTTONDBLCLK:
-      // MessageBox(NULL, "¼¤»îÁËÒ»¸öÏµÍ³Í­ÅÌË«»÷ÊÂ¼ş", "ÌáÊ¾", MB_OK);
+      // MessageBox(NULL, "æ¿€æ´»äº†ä¸€ä¸ªç³»ç»Ÿé“œç›˜åŒå‡»äº‹ä»¶", "æç¤º", MB_OK);
       break;
     case WM_RBUTTONDOWN:
     case WM_CONTEXTMENU:
@@ -407,7 +407,7 @@ gw_win_start(HINSTANCE hInstance)
   nid.uCallbackMessage = WM_TRAY_CALLBACK_MESSAGE;
   Shell_NotifyIcon(NIM_ADD, &nid);
 
-  // Æô¶¯¸÷ÖÖ·şÎñÏß³Ì
+  // å¯åŠ¨å„ç§æœåŠ¡çº¿ç¨‹
   gw_win_on_start(_hWndTray);
 
   // Main message loop.

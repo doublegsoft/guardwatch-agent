@@ -23,6 +23,7 @@
 */
 
 #include <pthread.h>
+#include <rrd.h>
 
 #include "gw_app.h"
 #include "gw_sqlite.h"
@@ -50,6 +51,38 @@ static pthread_t _gw_http_thread;
 static pthread_t _gw_os_thread;
 
 extern void* gw_os_collect(void*);
+
+void
+gw_app_init(const char* work_directory)
+{
+  char logdir[1024] = {'\0'};
+  char rrddir[1024] = {'\0'};
+
+  strcpy(logdir, work_directory);
+  strcat(logdir, "/log");
+  
+  strcpy(rrddir, work_directory);
+  strcat(rrddir, "/rrd");
+  gfc_fs_mkdirs(rrddir);
+
+  strcpy(_gw_app_settings.rrd_file, rrddir);
+  strcat(_gw_app_settings.rrd_file, "/guardwatch.rrd");
+
+  const char* rrd_argv[] = {
+    "create", _gw_app_settings.rrd_file, 
+    "-s", "60",
+    GW_OS_CPU_RRD_DS, 
+    GW_OS_MEMORY_RRD_DS, 
+    "RRA:AVERAGE:0.5:1:600", NULL
+  };
+  int rc = rrd_create(7, (char**)rrd_argv);
+  if (rc) {
+    printf("error: %s\n", rrd_get_error());
+  }
+
+  gfc_gc_init();
+  gfc_log_init(logdir, "guardwatch-agent");
+}
 
 void
 gw_app_start(const char* work_directory, const char* resources_path)
@@ -164,7 +197,7 @@ gw_app_start(const char* work_directory, const char* resources_path)
   /*!
   ** start os performance thread
   */
-//  pthread_create(&_gw_os_thread, NULL, gw_os_collect, NULL);
+  pthread_create(&_gw_os_thread, NULL, gw_os_collect, NULL);
 
   /*!
   ** start web server thread.

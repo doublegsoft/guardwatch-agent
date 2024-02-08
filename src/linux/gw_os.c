@@ -22,12 +22,14 @@
 ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include <stdio.h>
-#include <json.h>
 #include <rrd.h>
+#include <gfc.h>
+#include "gw_app.h"
 
 #include "gw_os.h"
 
-extern int _gw_os_collect_running;
+extern gw_app_settings_t  _gw_app_settings;
+extern int                _gw_os_collect_running;
 
 void gw_os_error(const char* fun, int err)
 {
@@ -37,14 +39,51 @@ void gw_os_error(const char* fun, int err)
 int
 gw_os_cpu(char** result)
 {
-  
+  char line[4096];
+  char value[4096] = {'\0'};
+  FILE* fp = fopen("/proc/stat", "r");
+
+  while (fgets(line, sizeof(line), fp))
+  {
+    gfc_list_p strs = gfc_string_split(line, " ");
+    long user = atol(gfc_list_get(strs, 1));
+    long nice = atol(gfc_list_get(strs, 2));
+    long system = atol(gfc_list_get(strs, 3));
+    long idle = atol(gfc_list_get(strs, 4));
+    long iowait = atol(gfc_list_get(strs, 5));
+    long irq = atol(gfc_list_get(strs, 6));
+    long softirq = atol(gfc_list_get(strs, 7));
+    long tot = user + nice + system + idle + iowait + irq + softirq;
+    double percent = (double)(idle * 100) / tot;
+    sprintf(value, "N:%.2f:200", percent);
+    gfc_list_deep_free(strs);
+    break;
+  }
+
+  const char* rrdupt_argv[] = {
+    "update", _gw_app_settings.rrd_file,
+    value,
+    NULL
+  };
+  int rc = rrd_update(3, (char**)rrdupt_argv);
+  if (rc) 
+    fprintf(stderr, "error: %s\n", rrd_get_error());
+  fclose(fp);
   return GW_OS_OK;
 }
 
 int
 gw_os_memory(char** result)
 {
-  
+  FILE* fp = fopen("/proc/meminfo", "r");
+
+  // const char* rrdupt_argv[] = {
+  //   "update", _gw_app_settings.rrd_file,
+  //   "N:42",
+  //   NULL
+  // };
+  // rrd_update(3, (char**)rrdupt_argv);
+  fclose(fp);
   return GW_OS_OK;
 }
 

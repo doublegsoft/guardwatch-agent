@@ -162,7 +162,7 @@ gw_httpd_event(struct mg_connection* conn,
         struct json_object* json_obj_ackid;
 
         json_object_object_get_ex(json_obj, "ackid", &json_obj_ackid);
-        char* ackid = json_object_get_string(json_obj_ackid);
+        const char* ackid = json_object_get_string(json_obj_ackid);
         if (ackid == NULL)
         {
           gw_httpd_ok(conn, "{\"error\":{\"code\":-1,\"message\":\"参数中没有识别标识！\"}");
@@ -192,11 +192,11 @@ gw_httpd_event(struct mg_connection* conn,
         for (i = 0; result != NULL && i < gfc_list_size(result); i++)
         {
           gfc_map_p row = gfc_list_get(result, i);
-          gfc_map_get(row, "stgcd", &key);
+          gfc_map_get(row, "stgcd", (user_data)&key);
 
           if (strcmp(key, KEY_AGENT_NAME) == 0)
           {
-            gfc_map_get(row, "val", &val);
+            gfc_map_get(row, "val", (user_data)&val);
             strcpy(agent_name, val);
           }
 

@@ -26,7 +26,6 @@
 #include <signal.h>
 #include <unistd.h>
 #include <pwd.h>
-#include <rrd.h>
 
 #include "gw_app.h"
 
@@ -35,9 +34,13 @@ int _gw_snmp_trap_running = 1;
 int _gw_http_web_running = 1;
 int _gw_os_collect_running = 1;
 
+volatile sig_atomic_t _gw_app_stop = 0;
+
 static void
-sigterm_handler(int signum)
+sigint_handler(int signum)
 {
+  printf("Stopping...");
+  _gw_app_stop = 1;
   exit(signum);
 }
 
@@ -46,13 +49,9 @@ char g_homedir[4096];
 int 
 main(int argc, char* argv[])
 {
-  signal(SIGTERM, sigterm_handler);
+  signal(SIGINT, &sigint_handler);
 
   char workdir[1024] = {'\0'};
-  char logdir[1024] = {'\0'};
-  char rrddir[1024] = {'\0'};
-  char rrdfile[1024] = {'\0'};
-
   struct passwd* pw = getpwuid(getuid());
   strcpy(g_homedir, pw->pw_dir);
   
@@ -60,43 +59,13 @@ main(int argc, char* argv[])
   strcat(workdir, "/.guardwatch-agent");
   gfc_fs_mkdirs(workdir);
 
-  strcpy(logdir, workdir);
-  strcat(logdir, "/log");
-  
-  strcpy(rrddir, workdir);
-  strcat(rrddir, "/rrd");
-  gfc_fs_mkdirs(rrddir);
-
-  strcpy(rrdfile, rrddir);
-  strcat(rrdfile, "/guardwatch.rrd");
-  printf("%s\n", rrdfile);
-
-  const char* rrd_argv[] = {
-    "create", rrdfile, 
-    "-s", "300",
-    "DS:cpu:GAUGE:600:U:U", 
-    "RRA:AVERAGE:0.5:1:600", NULL
-  };
-  int rc = rrd_create(6, (char**)rrd_argv);
-  if (rc) {
-    printf("error: %s\n", rrd_get_error());
-  }
-
-  const char* rrdupt_argv[] = {
-    "update", rrdfile,
-    "N:42",
-    NULL
-  };
-  rrd_update(3, rrdupt_argv);
-
-  gfc_gc_init();
-  gfc_log_init(logdir, "guardwatch-agent");
+  gw_app_init(workdir);
   gw_app_start(workdir, workdir);
 
-  // while(1)
-  // {
-  //   sleep(1);
-  // }
+  while(!_gw_app_stop)
+  {
+    sleep(1);
+  }
 
   return 0;
 }

@@ -26,6 +26,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <pwd.h>
+#include <rrd.h>
 
 #include "gw_app.h"
 
@@ -37,33 +38,65 @@ int _gw_os_collect_running = 1;
 static void
 sigterm_handler(int signum)
 {
-//  printf("Handler thread ID: %d\n", syscall(SYS_gettid));
   exit(signum);
 }
+
+char g_homedir[4096];
 
 int 
 main(int argc, char* argv[])
 {
-  char workdir[1024] = {'\0'};
-  char logdir[1024] = {'\0'};
-
-  struct passwd* pw = getpwuid(getuid());
-
   signal(SIGTERM, sigterm_handler);
 
+  char workdir[1024] = {'\0'};
+  char logdir[1024] = {'\0'};
+  char rrddir[1024] = {'\0'};
+  char rrdfile[1024] = {'\0'};
+
+  struct passwd* pw = getpwuid(getuid());
+  strcpy(g_homedir, pw->pw_dir);
+  
   strcpy(workdir, pw->pw_dir);
   strcat(workdir, "/.guardwatch-agent");
   gfc_fs_mkdirs(workdir);
 
   strcpy(logdir, workdir);
   strcat(logdir, "/log");
+  
+  strcpy(rrddir, workdir);
+  strcat(rrddir, "/rrd");
+  gfc_fs_mkdirs(rrddir);
+
+  strcpy(rrdfile, rrddir);
+  strcat(rrdfile, "/guardwatch.rrd");
+  printf("%s\n", rrdfile);
+
+  const char* rrd_argv[] = {
+    "create", rrdfile, 
+    "-s", "300",
+    "DS:cpu:GAUGE:600:U:U", 
+    "RRA:AVERAGE:0.5:1:600", NULL
+  };
+  int rc = rrd_create(6, (char**)rrd_argv);
+  if (rc) {
+    printf("error: %s\n", rrd_get_error());
+  }
+
+  const char* rrdupt_argv[] = {
+    "update", rrdfile,
+    "N:42",
+    NULL
+  };
+  rrd_update(3, rrdupt_argv);
 
   gfc_gc_init();
   gfc_log_init(logdir, "guardwatch-agent");
   gw_app_start(workdir, workdir);
 
-  while(1)
-    sleep(1);
+  // while(1)
+  // {
+  //   sleep(1);
+  // }
 
   return 0;
 }

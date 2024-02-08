@@ -8,6 +8,7 @@ set(LIBUV       "3rd/libuv-1.44.1")
 set(SQLITE      "3rd/sqlite-3.43.2")
 set(NETSNMP     "3rd/net-snmp-5.9.4")
 set(JSON_C      "3rd/json-c-0.17")
+set(RRDTOOL     "3rd/rrdtool-1.8.0")
 set(GFC         "3rd/gfc-0.1.1")
 
 set(GW_SOURCES
@@ -28,6 +29,7 @@ set(GW_LIBS
   netsnmpagent
   netsnmpmibs
   json-c
+  rrd
   gfc
 )
 
@@ -50,7 +52,8 @@ function(copy_directory SOURCE_PATH)
 endfunction()
 
 include_directories(
-  /opt/local/include
+  "src"
+  "/opt/local/include"
   "${GFC}/include"
   "${CMAKE_BINARY_DIR}/${SQLITE}"
   "${CMAKE_BINARY_DIR}/${NETSNMP}/include"
@@ -58,15 +61,16 @@ include_directories(
   "${NETSNMP}/snmplib"
   "${JSON_C}"
   "${CMAKE_BINARY_DIR}/${JSON_C}"
-  "src"
+  "${RRDTOOL}/src"
 )
 
 link_directories(
-  /opt/local/lib
+  "/opt/local/lib"
   "${SQLITE}/.libs"
   "${CMAKE_BINARY_DIR}/${SQLITE}/.libs"
   "${CMAKE_BINARY_DIR}/${NETSNMP}/agent/.libs"
   "${CMAKE_BINARY_DIR}/${NETSNMP}/snmplib/.libs"
+  "${CMAKE_BINARY_DIR}/${RRDTOOL}/src/.libs"
 )
 
 add_subdirectory("${JSON_C}")
@@ -142,7 +146,7 @@ ELSEIF(WIN32)
 
   add_executable(guardwatch-agent
     ${GW_SOURCES}
-    "src/gw_os.c"
+    "src/windows/gw_os.c"
     "src/windows/gw_win.c"
     "src/windows/gw_main.c"
   )
@@ -155,6 +159,7 @@ ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   add_executable(guardwatch-agent
     ${GW_SOURCES}
     "src/linux/gw_main.c"
+    "src/linux/gw_os.c"
   )
   target_link_libraries(guardwatch-agent PRIVATE
     ${GW_LIBS}

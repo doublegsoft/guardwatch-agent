@@ -54,14 +54,14 @@ void*
 gw_httpd_serve(void*);
 
 /*!
-**
-** @param response_body
-**
-** @return
+** Replies response to http client.
 */
 int
 gw_httpd_respond(char* response_body);
 
+/*!
+** Processes http post methods.
+*/
 int
 gw_httpd_post(const char* request_body);
 

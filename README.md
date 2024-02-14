@@ -109,3 +109,15 @@ cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=~/export/bin/toolchain-mingw32-
 export RRDTOOL=rrdtool-1.8.0
 mkdir -p 3rd/rrdtool-1.8.0 && cd 3rd/$RRDTOOL && ../../../../3rd/$RRDTOOL/configure && make
 ```
+
+## rrdtool graph
+
+图片生成脚本
+
+```
+rrdtool graph x.png -w 785 -h 300 --start now-60 --end now --upper-limit 100 --lower-limit 0 --x-grid SECOND:5:SECOND:5:SECOND:5:0:%M\:%S DEF:cpu=./rrd/guardwatch.rrd:cpu:AVERAGE LINE1:cpu#009900:"CPU (IDLE)" GPRINT:cpu:AVERAGE:"CPU (IDLE)\: %.1lf%%"
+```
+
+效果图
+
+![CPU示例](www/img/cpu.png)

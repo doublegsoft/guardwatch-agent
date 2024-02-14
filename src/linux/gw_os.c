@@ -23,6 +23,7 @@
 */
 #include <stdio.h>
 #include <rrd.h>
+#include <json.h>
 #include <gfc.h>
 #include "gw_app.h"
 
@@ -36,8 +37,8 @@ void gw_os_error(const char* fun, int err)
   
 }
 
-int
-gw_os_cpu(char** result)
+static void 
+gw_os_cpu_monitor(void)
 {
   char line[4096];
   char value[4096] = {'\0'};
@@ -69,11 +70,10 @@ gw_os_cpu(char** result)
   if (rc) 
     fprintf(stderr, "error: %s\n", rrd_get_error());
   fclose(fp);
-  return GW_OS_OK;
 }
 
-int
-gw_os_memory(char** result)
+static void
+gw_os_memory_monitor(void)
 {
   FILE* fp = fopen("/proc/meminfo", "r");
 
@@ -84,6 +84,21 @@ gw_os_memory(char** result)
   // };
   // rrd_update(3, (char**)rrdupt_argv);
   fclose(fp);
+}
+
+int
+gw_os_cpu(char** result)
+{
+  struct json_object* jobj = json_object_new_object();
+
+  json_object_put(jobj);
+  
+  return GW_OS_OK;
+}
+
+int
+gw_os_memory(char** result)
+{
   return GW_OS_OK;
 }
 
@@ -106,35 +121,13 @@ gw_os_processes(char** result)
 ** @return always {@code NULL}
 */
 void*
-gw_os_collect(void* data)
+gw_os_start(void* data)
 {
-  time_t raw;
-  char* res = NULL;
-
   while(1)
   {
     if (_gw_os_collect_running != 1) break;
-
-    time (&raw);
-
-    /*!
-    ** CPU
-    */
-    gw_os_cpu(&res);
-    // gtdb_insert("cpu", raw, os_result);
-    if (res != NULL)
-      free(res);
-    res = NULL;
-
-    /*!
-    ** MEMORY
-    */
-    gw_os_memory(&res);
-    // gtdb_insert("memory", raw, os_result);
-    if (res != NULL) 
-      free(res);
-    res = NULL;
-
-    sleep(1);
+    gw_os_cpu_monitor();
+    gw_os_memory_monitor();
+    sleep(5);
   }
 }

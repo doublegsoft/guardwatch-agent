@@ -39,6 +39,12 @@ extern "C"
 
 
 /*!
+** Starts to gather machine performance metrics such as cpu, memory usages.
+*/
+void*
+gw_os_start(void*);
+
+/*!
 ** Gets the cpu result, and the format is below:
 ** <ul>
 **   <li>name: volume name</li>

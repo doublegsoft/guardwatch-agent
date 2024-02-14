@@ -29,9 +29,7 @@
 #include "gw_app.h"
 #include "gw_sqlite.h"
 #include "gw_httpd.h"
-#ifdef WIN32
 #include "gw_os.h"
-#endif
 
 
 /*!
@@ -221,7 +219,6 @@ gw_httpd_event(struct mg_connection* conn,
       gw_httpd_ok(conn, "{\"error\":{\"code\":0,\"message\":\"success\"}}");
       return;
     }
-#ifdef WIN32
     else if (gw_httpd_prefix_check(&hm->uri, &GW_HTTP_URI_OS_CPU))
     {
       gw_os_cpu(&result);
@@ -238,7 +235,6 @@ gw_httpd_event(struct mg_connection* conn,
     {
       gw_os_volumes(&result);
     }
-#endif
     if (result != NULL)
     {
       gw_httpd_ok(conn, result);

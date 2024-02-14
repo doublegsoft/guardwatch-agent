@@ -70,7 +70,7 @@ gw_app_init(const char* work_directory)
 
   const char* rrd_argv[] = {
     "create", _gw_app_settings.rrd_file, 
-    "-s", "60",
+    "-s", "5",
     GW_OS_CPU_RRD_DS, 
     GW_OS_MEMORY_RRD_DS, 
     "RRA:AVERAGE:0.5:1:600", NULL
@@ -197,7 +197,7 @@ gw_app_start(const char* work_directory, const char* resources_path)
   /*!
   ** start os performance thread
   */
-  pthread_create(&_gw_os_thread, NULL, gw_os_collect, NULL);
+  pthread_create(&_gw_os_thread, NULL, gw_os_start, NULL);
 
   /*!
   ** start web server thread.

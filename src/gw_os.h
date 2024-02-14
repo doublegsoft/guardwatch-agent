@@ -34,6 +34,10 @@ extern "C"
 #define GW_OS_ERROR                             1000
 #define GW_OS_ERROR_INSUFFICIENT_BUFFER         1001
 
+#define GW_OS_CPU_RRD_DS                        "DS:cpu:GAUGE:600:0:100"
+#define GW_OS_MEMORY_RRD_DS                     "DS:mem:GAUGE:600:U:U"
+
+
 /*!
 ** Gets the cpu result, and the format is below:
 ** <ul>

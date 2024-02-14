@@ -79,8 +79,19 @@ typedef struct gw_app_settings_s
   ** the agent web port.
   */
   char agent_web_port[1024];
+
+  /*!
+  ** the rrd file path.
+  */
+  char rrd_file[2048];
 }
 gw_app_settings_t;
+
+/*!
+** initializes the application presettings.
+*/
+void
+gw_app_init(const char* work_directory);
 
 /*!
 ** starts guardwatch application and starts all working threads.

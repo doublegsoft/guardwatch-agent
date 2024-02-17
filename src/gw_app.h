@@ -81,9 +81,19 @@ typedef struct gw_app_settings_s
   char agent_web_port[1024];
 
   /*!
-  ** the rrd file path.
+  ** the cpu rrd file path.
   */
-  char rrd_file[2048];
+  char cpu_rrd_file[2048];
+
+  /*!
+  ** the memory rrd file path.
+  */
+  char mem_rrd_file[2048];
+
+  /*!
+  ** the volume rrd file path.
+  */
+  char vol_rrd_file[2048];
 }
 gw_app_settings_t;
 

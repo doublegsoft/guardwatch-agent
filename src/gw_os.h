@@ -36,6 +36,7 @@ extern "C"
 
 #define GW_OS_CPU_RRD_DS                        "DS:cpu:GAUGE:600:0:100"
 #define GW_OS_MEMORY_RRD_DS                     "DS:mem:GAUGE:600:U:U"
+#define GW_OS_VOLUME_RRD_DS                     "DS:vol:GAUGE:600:U:U"
 
 
 /*!

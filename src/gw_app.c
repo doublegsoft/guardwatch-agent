@@ -65,19 +65,49 @@ gw_app_init(const char* work_directory)
   strcat(rrddir, "/rrd");
   gfc_fs_mkdirs(rrddir);
 
-  strcpy(_gw_app_settings.rrd_file, rrddir);
-  strcat(_gw_app_settings.rrd_file, "/guardwatch.rrd");
+  strcpy(_gw_app_settings.cpu_rrd_file, rrddir);
+  strcat(_gw_app_settings.cpu_rrd_file, "/cpu.rrd");
 
-  const char* rrd_argv[] = {
-    "create", _gw_app_settings.rrd_file, 
+  strcpy(_gw_app_settings.mem_rrd_file, rrddir);
+  strcat(_gw_app_settings.mem_rrd_file, "/memory.rrd");
+
+  strcpy(_gw_app_settings.vol_rrd_file, rrddir);
+  strcat(_gw_app_settings.vol_rrd_file, "/volume.rrd");
+
+  char* cpu_rrd_argv[] = {
+    "create", _gw_app_settings.cpu_rrd_file, 
     "-s", "5",
     GW_OS_CPU_RRD_DS, 
+    "RRA:AVERAGE:0.5:1:600", NULL
+  };
+  int rc = rrd_create(6, (char**)cpu_rrd_argv);
+  if (rc) 
+  {
+    fprintf(stderr, "error: %s\n", rrd_get_error());
+  }
+
+  char* mem_rrd_argv[] = {
+    "create", _gw_app_settings.mem_rrd_file, 
+    "-s", "5",
     GW_OS_MEMORY_RRD_DS, 
     "RRA:AVERAGE:0.5:1:600", NULL
   };
-  int rc = rrd_create(7, (char**)rrd_argv);
-  if (rc) {
-    printf("error: %s\n", rrd_get_error());
+  rc = rrd_create(6, (char**)mem_rrd_argv);
+  if (rc) 
+  {
+    fprintf(stderr, "error: %s\n", rrd_get_error());
+  }
+
+  char* vol_rrd_argv[] = {
+    "create", _gw_app_settings.vol_rrd_file, 
+    "-s", "5",
+    GW_OS_VOLUME_RRD_DS, 
+    "RRA:AVERAGE:0.5:1:600", NULL
+  };
+  rc = rrd_create(6, (char**)vol_rrd_argv);
+  if (rc) 
+  {
+    fprintf(stderr, "error: %s\n", rrd_get_error());
   }
 
   gfc_gc_init();

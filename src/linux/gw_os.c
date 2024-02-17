@@ -24,9 +24,11 @@
 #include <stdio.h>
 #include <rrd.h>
 #include <json.h>
+#include <math.h>
 #include <gfc.h>
-#include "gw_app.h"
+#include <string.h>
 
+#include "gw_app.h"
 #include "gw_os.h"
 
 extern gw_app_settings_t  _gw_app_settings;
@@ -55,14 +57,14 @@ gw_os_cpu_monitor(void)
     long irq = atol(gfc_list_get(strs, 6));
     long softirq = atol(gfc_list_get(strs, 7));
     long tot = user + nice + system + idle + iowait + irq + softirq;
-    double percent = (double)(idle * 100) / tot;
-    sprintf(value, "N:%.2f:200", percent);
+    double percent = 100 - (double)(idle * 100) / tot;
+    sprintf(value, "N:%.2f", percent);
     gfc_list_deep_free(strs);
     break;
   }
 
   const char* rrdupt_argv[] = {
-    "update", _gw_app_settings.rrd_file,
+    "update", _gw_app_settings.cpu_rrd_file,
     value,
     NULL
   };
@@ -75,23 +77,93 @@ gw_os_cpu_monitor(void)
 static void
 gw_os_memory_monitor(void)
 {
+  char line[4096];
+  char value[4096] = {'\0'};
   FILE* fp = fopen("/proc/meminfo", "r");
 
-  // const char* rrdupt_argv[] = {
-  //   "update", _gw_app_settings.rrd_file,
-  //   "N:42",
-  //   NULL
-  // };
-  // rrd_update(3, (char**)rrdupt_argv);
+  char line_total[4096] = {'\0'};
+  char line_free[4096] = {'\0'};
+
+  while (fgets(line, sizeof(line), fp))
+  {
+    if (line_total[0] != '\0' && line_free[0] != '\0') 
+      break;
+    if (strstr(line, "MemTotal") != NULL)
+      strcpy(line_total, line);
+    if (strstr(line, "MemFree") != NULL)
+      strcpy(line_free, line);
+  }
   fclose(fp);
+
+  char* token = strstr(line_total, ":");
+  token++;
+  int total_mem = atoi(token);
+
+  token = strstr(line_free, ":");
+  token++;
+  int free_mem = atoi(token);
+
+  double percent = (double)(total_mem - free_mem) * 100 / total_mem;
+  sprintf(value, "N:%.2f", percent);
+  const char* rrdupt_argv[] = {
+    "update", _gw_app_settings.mem_rrd_file,
+    value,
+    NULL
+  };
+  int rc = rrd_update(3, (char**)rrdupt_argv);
+  if (rc) 
+    fprintf(stderr, "error: %s\n", rrd_get_error());
 }
 
 int
 gw_os_cpu(char** result)
 {
-  struct json_object* jobj = json_object_new_object();
+  unsigned long     step = 0;
+  time_t            start;
+  time_t            end;
+  unsigned long     ds_cnt = 0;
+  char**            ds_names;
+  rrd_value_t*      values;
+  
+  char* rrd_argv[] = {
+    "fetch", _gw_app_settings.cpu_rrd_file, "AVERAGE",
+    "--resolution", "5s",
+    "--start", "now-60",
+    "--end", "now"
+  };
+  
+  int rc = rrd_fetch(9, rrd_argv, &start, &end, &step, &ds_cnt, &ds_names, &values);
 
-  json_object_put(jobj);
+  if (rc == 0) 
+  {
+    struct json_object* jobj = json_object_new_object();
+    json_object_object_add(jobj, "name", json_object_new_string(ds_names[0]));
+
+    struct json_object* jarr_times = json_object_new_array();
+    struct json_object* jarr_values = json_object_new_array();
+
+    int count = (end - start) / step - 1;
+
+    for (int i = 0; i < count; i++) 
+    {
+      json_object_array_add(jarr_times, json_object_new_int(start + i * step));
+      if (!isnan(values[i])) 
+        json_object_array_add(jarr_values, json_object_new_double(values[i]));
+      else 
+        json_object_array_add(jarr_values, json_object_new_double(-1));  
+    }
+
+    json_object_object_add(jobj, "times", jarr_times);
+    json_object_object_add(jobj, "values", jarr_values);
+
+    const char* jstr = json_object_to_json_string(jobj);
+    int len = strlen(jstr);
+    *result = malloc(sizeof(char) * (len + 1));
+    strcpy(*result, jstr);
+    (*result)[len] = '\0';
+
+    json_object_put(jobj);
+  }
   
   return GW_OS_OK;
 }
@@ -99,6 +171,52 @@ gw_os_cpu(char** result)
 int
 gw_os_memory(char** result)
 {
+  unsigned long     step = 0;
+  time_t            start;
+  time_t            end;
+  unsigned long     ds_cnt = 0;
+  char**            ds_names;
+  rrd_value_t*      values;
+  
+  char* rrd_argv[] = {
+    "fetch", _gw_app_settings.mem_rrd_file, "AVERAGE",
+    "--resolution", "5s",
+    "--start", "now-60",
+    "--end", "now"
+  };
+  
+  int rc = rrd_fetch(9, rrd_argv, &start, &end, &step, &ds_cnt, &ds_names, &values);
+
+  if (rc == 0) 
+  {
+    struct json_object* jobj = json_object_new_object();
+    json_object_object_add(jobj, "name", json_object_new_string(ds_names[0]));
+
+    struct json_object* jarr_times = json_object_new_array();
+    struct json_object* jarr_values = json_object_new_array();
+
+    int count = (end - start) / step - 1;
+
+    for (int i = 0; i < count; i++) 
+    {
+      json_object_array_add(jarr_times, json_object_new_int(start + i * step));
+      if (!isnan(values[i])) 
+        json_object_array_add(jarr_values, json_object_new_double(values[i]));
+      else 
+        json_object_array_add(jarr_values, json_object_new_double(-1));  
+    }
+
+    json_object_object_add(jobj, "times", jarr_times);
+    json_object_object_add(jobj, "values", jarr_values);
+
+    const char* jstr = json_object_to_json_string(jobj);
+    int len = strlen(jstr);
+    *result = malloc(sizeof(char) * (len + 1));
+    strcpy(*result, jstr);
+    (*result)[len] = '\0';
+
+    json_object_put(jobj);
+  }
   return GW_OS_OK;
 }
 
